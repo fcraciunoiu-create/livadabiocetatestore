@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ro" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coșul tău — Livada Bio Cetate</title>
+  <meta name="description" content="Verifică produsele din coș, completează datele de livrare și trimite comanda pe WhatsApp la Livada Bio Cetate." />
+  <meta name="theme-color" content="#256e3d" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23256e3d'/%3E%3Cpath d='M16 26c-6 0-9.5-4.6-9.5-9.6A7 7 0 0 1 16 10a7 7 0 0 1 9.5 6.4C25.5 21.4 22 26 16 26Z' fill='%23f6f0e2'/%3E%3C/svg%3E" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f1f8f2',
+              100: '#dcefdf',
+              200: '#bbdfc2',
+              300: '#8cc79a',
+              400: '#57a76d',
+              500: '#358a4e',
+              600: '#256e3d',
+              700: '#1f5732',
+              800: '#1b462a',
+              900: '#163a24'
+            },
+            cream: '#fbf7ef',
+            clay: {
+              300: '#f2cf9a',
+              400: '#e8a44f',
+              500: '#d98a2b',
+              600: '#b96f1d'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+            display: ['Fraunces', 'Georgia', 'Cambria', 'serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    .toast {
+      opacity: 0;
+      transform: translateY(14px) scale(0.98);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+    .toast-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    @keyframes badgePop {
+      0% { transform: scale(0.6); }
+      60% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    .badge-pop {
+      animation: badgePop 0.35s ease-out;
+    }
+    .field-invalid {
+      border-color: #dc2626 !important;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+    }
+    /* Când coșul este gol, coloana de sumar dispare și lista ocupă tot rândul. */
+    #cart-view.cart-view--empty {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body data-page="cart" class="min-h-screen bg-cream font-sans text-brand-900 antialiased">
+  <a href="#cart-view" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand-700 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white">
+    Sari la coș
+  </a>
+
+  <header class="sticky top-0 z-40 border-b border-brand-900/5 bg-cream/85 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <a href="index.html" class="flex items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
+        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-600 text-cream shadow-sm">
+          <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6" aria-hidden="true">
+            <path d="M12 21c-4.5 0-7-3.6-7-7.6A5.4 5.4 0 0 1 12 8.4a5.4 5.4 0 0 1 7 5c0 4-2.5 7.6-7 7.6Z" fill="currentColor" />
+            <path d="M12 8.4c-.3-2.2 1-4 3-5" stroke="#8cc79a" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span class="leading-tight">
+          <span class="block font-display text-lg font-semibold tracking-tight">Livada Bio Cetate</span>
+          <span class="block text-xs font-medium text-brand-700/70">Livadă bio · Cetate, Dolj</span>
+        </span>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="tel:+40787340162" class="hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-brand-800 transition hover:bg-brand-50 sm:inline-flex">
+          <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
+            <path d="M6.5 4h3l1.5 4-2 1.5a10 10 0 0 0 5 5L15.5 12l4 1.5v3a2 2 0 0 1-2.2 2A14 14 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          0787 340 162
+        </a>
+        <a href="index.html#produse" class="inline-flex items-center gap-2 rounded-full bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-900/15 transition hover:bg-brand-700 active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream">
+          <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
+            <path d="M15 10H5m4.5-4.5L5 10l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span class="hidden sm:inline">Produse</span>
+          <span class="sm:hidden">Înapoi</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
+    <div
+      id="storage-notice"
+      class="mb-4 hidden rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900"
+      role="status"
+    >
+      Browserul nu permite salvarea coșului (mod privat, cookie-uri blocate sau pagina deschisă direct din fișier).
+      Rulează site-ul prin http și dezactivează modul privat, apoi reîncarcă pagina.
+    </div>
+
+    <nav aria-label="Firimituri" class="text-xs font-medium text-brand-800/50">
+      <a href="index.html" class="transition hover:text-brand-700">Acasă</a>
+      <span class="mx-1.5">/</span>
+      <span class="text-brand-800/80">Coș</span>
+    </nav>
+
+    <div class="mt-3 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Coșul tău</h1>
+          <span
+            data-cart-count
+            aria-hidden="true"
+            class="hidden grid h-6 min-w-[1.5rem] place-items-center rounded-full bg-brand-100 px-1.5 text-xs font-bold leading-none text-brand-700"
+          >0</span>
+        </div>
+        <p class="mt-2 max-w-xl text-sm leading-relaxed text-brand-800/65">
+          Verifică produsele, completează datele de livrare și trimite comanda pe WhatsApp. Confirmăm noi disponibilitatea și ora livrării.
+        </p>
+      </div>
+      <a href="index.html#produse" class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brand-800 ring-1 ring-brand-900/10 transition hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream">
+        <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
+          <path d="M15 10H5m4.5-4.5L5 10l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Continuă cumpărăturile
+      </a>
+    </div>
+
+    <!-- Confirmare comandă -->
+    <div id="cart-success" class="mt-6 hidden rounded-3xl bg-brand-700 p-6 text-cream shadow-xl shadow-brand-900/20 sm:p-10">
+      <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white/10">
+        <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6" aria-hidden="true">
+          <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <h2 class="mt-5 font-display text-2xl font-semibold sm:text-3xl">
+        Mulțumim, <span id="success-name">dragă client</span>!
+      </h2>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-cream/80 sm:text-base">
+        Comanda este pregătită și WhatsApp s-a deschis cu mesajul complet, cu produse, cantități și total.
+        Apasă „Trimite” în WhatsApp ca să ajungă la noi. Dacă fereastra nu s-a deschis, scrie-ne direct la
+        <a href="tel:+40787340162" class="font-semibold underline decoration-cream/40 underline-offset-2">0787 340 162</a>.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="index.html#produse" class="inline-flex items-center gap-2 rounded-full bg-cream px-5 py-3 text-sm font-semibold text-brand-800 transition hover:bg-white active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700">
+          Vezi produsele
+        </a>
+        <a href="https://wa.me/40787340162" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-cream ring-1 ring-cream/30 transition hover:bg-white/10 active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700">
+          Deschide WhatsApp
+        </a>
+      </div>
+    </div>
+    <div id="cart-view" class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start">
+      <!-- Produse -->
+      <section class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-brand-900/5 sm:p-6">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="font-display text-xl font-semibold tracking-tight">Produse în coș</h2>
+          <button
+            id="clear-cart"
+            type="button"
+            class="hidden rounded-lg px-2 py-1 text-xs font-semibold text-brand-800/55 underline decoration-brand-800/25 underline-offset-2 transition hover:text-red-600 hover:decoration-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          >
+            Golește coșul
+          </button>
+        </div>
+
+        <ul id="cart-items" class="mt-2 divide-y divide-brand-900/5"></ul>
+
+        <div id="cart-empty" class="hidden py-12 text-center">
+          <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-brand-50 text-brand-600">
+            <svg viewBox="0 0 24 24" fill="none" class="h-8 w-8" aria-hidden="true">
+              <path d="M4 5h2l1.6 10.4a1.6 1.6 0 0 0 1.6 1.4h7.9a1.6 1.6 0 0 0 1.6-1.3L20 8H6.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="9.5" cy="20" r="1.4" fill="currentColor" />
+              <circle cx="17" cy="20" r="1.4" fill="currentColor" />
+            </svg>
+          </span>
+          <p class="mt-4 font-display text-lg font-semibold">Coșul este gol</p>
+          <p class="mx-auto mt-1 max-w-xs text-sm leading-relaxed text-brand-800/60">
+            Adaugă câteva fructe sau o sticlă de suc și revino aici pentru a finaliza comanda.
+          </p>
+          <a href="index.html#produse" class="mt-5 inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white">
+            Vezi produsele
+          </a>
+        </div>
+
+        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-brand-900/5 pt-4">
+          <a href="index.html#produse" class="inline-flex items-center gap-2 text-sm font-semibold text-brand-700 transition hover:text-brand-800">
+            <svg viewBox="0 0 20 20" fill="none" class="h-4 w-4" aria-hidden="true">
+              <path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+            Adaugă alte produse
+          </a>
+          <p class="text-[11px] font-medium text-brand-800/45">Cantitate maximă: 50 buc. / produs</p>
+        </div>
+      </section>
+
+
+      <!-- Sumar + date de livrare -->
+      <aside id="cart-aside" class="space-y-5 lg:sticky lg:top-24">
+        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-brand-900/5 sm:p-6">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="font-display text-lg font-semibold tracking-tight">Sumar comandă</h2>
+            <span id="cart-count-label" class="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">0 produse</span>
+          </div>
+
+          <dl class="mt-4 space-y-2.5 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-brand-800/70">Subtotal</dt>
+              <dd id="cart-subtotal" class="font-semibold text-brand-900">0,00 lei</dd>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-brand-800/70">Livrare</dt>
+              <dd class="text-right text-xs font-medium text-brand-800/60">se confirmă pe WhatsApp</dd>
+            </div>
+          </dl>
+
+          <div class="mt-4 flex items-end justify-between gap-3 border-t border-brand-900/5 pt-4">
+            <span class="text-sm font-semibold">Total</span>
+            <span id="cart-total" class="font-display text-2xl font-semibold text-brand-800">0,00 lei</span>
+          </div>
+
+          <p class="mt-3 text-[11px] leading-relaxed text-brand-800/50">
+            Plata se face la livrare, după ce confirmăm comanda pe WhatsApp.
+          </p>
+        </div>
+
+        <form id="checkout-form" class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-brand-900/5 sm:p-6" novalidate>
+          <h2 class="font-display text-lg font-semibold tracking-tight">Date de livrare</h2>
+          <p class="mt-1 text-xs text-brand-800/55">Toate câmpurile sunt obligatorii.</p>
+
+          <div class="mt-4 space-y-4">
+            <div>
+              <label for="customer-name" class="mb-1.5 block text-sm font-medium text-brand-900">Nume complet</label>
+              <input
+                id="customer-name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                placeholder="Ion Popescu"
+                aria-describedby="error-name"
+                class="w-full rounded-xl border border-brand-900/10 bg-cream/60 px-4 py-3 text-sm text-brand-900 placeholder:text-brand-800/35 transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/25"
+              />
+              <p id="error-name" class="mt-1.5 hidden text-xs font-medium text-red-600"></p>
+            </div>
+
+            <div>
+              <label for="customer-phone" class="mb-1.5 block text-sm font-medium text-brand-900">Telefon</label>
+              <input
+                id="customer-phone"
+                name="phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                placeholder="07xx xxx xxx"
+                aria-describedby="error-phone"
+                class="w-full rounded-xl border border-brand-900/10 bg-cream/60 px-4 py-3 text-sm text-brand-900 placeholder:text-brand-800/35 transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/25"
+              />
+              <p id="error-phone" class="mt-1.5 hidden text-xs font-medium text-red-600"></p>
+            </div>
+
+            <div>
+              <label for="customer-address" class="mb-1.5 block text-sm font-medium text-brand-900">Adresă de livrare</label>
+              <textarea
+                id="customer-address"
+                name="address"
+                rows="3"
+                autocomplete="street-address"
+                placeholder="Strada, număr, localitate, județ"
+                aria-describedby="error-address"
+                class="w-full resize-none rounded-xl border border-brand-900/10 bg-cream/60 px-4 py-3 text-sm text-brand-900 placeholder:text-brand-800/35 transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/25"
+              ></textarea>
+              <p id="error-address" class="mt-1.5 hidden text-xs font-medium text-red-600"></p>
+            </div>
+          </div>
+
+          <button
+            id="checkout-submit"
+            type="submit"
+            class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-900/15 transition hover:bg-brand-700 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          >
+            <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
+              <path d="M20 12a8 8 0 0 1-11.8 7L4 20l1-4.1A8 8 0 1 1 20 12Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M9 9.5c.6 2.2 2.3 3.9 4.5 4.5l1-1.4 1.9.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Trimite comanda pe WhatsApp
+          </button>
+
+          <p class="mt-3 text-[11px] leading-relaxed text-brand-800/50">
+            Se deschide WhatsApp cu mesajul complet al comenzii. Pe site nu se percepe nicio plată.
+          </p>
+        </form>
+      </aside>
+    </div>
+
+    <noscript>
+      <p class="mt-6 rounded-2xl bg-clay-300/30 px-5 py-4 text-sm leading-relaxed text-brand-900">
+        Coșul are nevoie de JavaScript pentru a fi afișat și pentru a trimite comanda. Te rugăm să activezi JavaScript, apoi reîncarcă pagina.
+      </p>
+    </noscript>
+  </main>
+
+
+  <footer class="border-t border-brand-900/10">
+    <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-xs text-brand-800/55 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <p>© <span id="year">2025</span> Livada Bio Cetate · Cetate, județul Dolj</p>
+      <p class="flex flex-wrap items-center gap-x-4 gap-y-1 font-medium">
+        <a href="tel:+40787340162" class="transition hover:text-brand-700">0787 340 162</a>
+        <a href="https://wa.me/40787340162" target="_blank" rel="noopener noreferrer" class="transition hover:text-brand-700">WhatsApp</a>
+        <a href="index.html" class="transition hover:text-brand-700">Magazin</a>
+      </p>
+    </div>
+  </footer>
+
+  <div
+    id="toast"
+    role="status"
+    aria-live="polite"
+    class="toast pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl bg-brand-800 px-4 py-3 text-sm font-medium text-white shadow-xl shadow-brand-900/25 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:mx-0"
+  >
+    <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-500">
+      <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
+        <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
+    <p data-toast-message class="leading-snug">Coș actualizat.</p>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    /* null-safe: un #year lipsă nu mai aruncă eroare în pagina coșului */
+    var yearLabel = document.getElementById('year');
+    if (yearLabel) yearLabel.textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+
